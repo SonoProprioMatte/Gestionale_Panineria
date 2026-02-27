@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  php:
+    build:
+      context: ./docker/php
+    container_name: panineria_php
+    restart: unless-stopped
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - panineria_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: panineria_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+    networks:
+      - panineria_net
+
+  db:
+    image: mysql:8.0
+    container_name: panineria_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: panineria
+      MYSQL_USER: panineria_user
+      MYSQL_PASSWORD: panineria_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - panineria_net
+
+networks:
+  panineria_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
