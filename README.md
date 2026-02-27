@@ -54,14 +54,6 @@ panineria-app/
     └── init.sql
 ```
 
-## Modifiche alla struttura originale
-
-| Aggiunta | Motivo |
-|---|---|
-| `docker/nginx/default.conf` | Serve Nginx separato da PHP-FPM (best practice, performance) |
-| `src/auth.php` | Helper riutilizzabile per sessioni, ruoli, redirect (evita codice duplicato) |
-| `src/api/admin_orders.php` | Separato da `orders.php` per rispettare il principio di responsabilità singola e semplificare i controlli RBAC |
-
 ## Sicurezza implementata
 
 - `password_hash(PASSWORD_BCRYPT, cost:12)` + `password_verify`
@@ -76,5 +68,3 @@ panineria-app/
 | Ruolo | Email | Password |
 |---|---|---|
 | Admin | admin@panineria.it | password |
-
-> ⚠️ **Attenzione**: Cambia tutte le password e le variabili d'ambiente prima del deploy in produzione!
