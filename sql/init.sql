@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS order_items (
 -- Seed: default admin user
 -- Hash bcrypt cost=12 della password "password" — CAMBIA IN PRODUZIONE
 INSERT INTO users (name, email, password, role) VALUES
-('Admin', 'admin@panineria.it', '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
+('Admin', 'admin@panineria.it', '$2y$10$0gViS88T3l2U.ePrMnvqEOTTRM1WEk5/WQF9dGFHFOLkyFCXPqBru', 'admin');
 
 -- Seed: sample products
 INSERT INTO products (name, description, price, category, is_visible) VALUES
