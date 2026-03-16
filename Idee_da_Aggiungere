@@ -1,0 +1,26 @@
+Gestione Ordini: Possibilità di aggiungere, modificare o cancellare ordini in tempo reale.
+
+Menu Dinamico: Un'interfaccia admin per cambiare prezzi, ingredienti o disponibilità dei panini senza toccare il codice.
+
+Personalizzazione (Il "Punto di Forza"): In una panineria è fondamentale poter gestire le aggiunte/rimozioni (es. "Senza cipolla", "+ Doppio Cheddar").
+
+Gestione delle Scorte (Inventory Tracking)
+	Collega il menu al magazzino. Se vendo un "Panino Deluxe", il sistema deve scalare automaticamente dal 	database (Ti permette di ricevere avvisi quando un ingrediente sta per finire):
+
+	1x Pane tipo Tartaruga
+	2x Fette di Bacon
+	100g di Carne
+
+Dashboard Statistica (Business Intelligence)
+	Aggiungi una sezione per il proprietario con grafici (magari usando librerie come Chart.js):
+	- Qual è il panino più venduto?
+	- In quale fascia oraria si lavora di più?
+	- Calcolo del ricavo giornaliero/mensile.
+
+Sicurezza: Se hai un'area admin, assicurati che le password siano criptate (es. con bcrypt) e che le query al database siano protette da SQL Injection (usa i prepared statements).
+
+Responsiveness: Il gestionale verrà usato probabilmente su tablet o smartphone (dai camerieri o in cassa). Assicurati che l'interfaccia sia Mobile compatible.
+
+Possibilità di aggiungere e cambiare foto nella schermata admin
+
+Possibilità di aggiungere, cambiare e spostare le categorie dei prodotti
