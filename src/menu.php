@@ -52,9 +52,8 @@ requireLogin();
             </div>
             <textarea id="order-notes" placeholder="Note per l'ordine (opzionale)..."
                 class="w-full border border-gray-200 rounded-lg p-2 text-sm mb-3 resize-none" rows="2"></textarea>
-            <button onclick="submitOrder()"
-                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition disabled:opacity-50"
-                id="btn-order">
+            <button onclick="submitOrder()" id="btn-order"
+                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition disabled:opacity-50">
                 Invia Ordine
             </button>
         </div>

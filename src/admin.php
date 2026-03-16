@@ -46,7 +46,8 @@ requireAdmin();
     <section id="section-products" class="hidden">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-800">Gestione Menu</h2>
-            <button onclick="openModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+            <button onclick="openModal()"
+                class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                 + Nuovo Prodotto
             </button>
         </div>
@@ -56,7 +57,6 @@ requireAdmin();
     </section>
 </div>
 
-<!-- Modal -->
 <div id="modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 hidden z-50">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         <h3 id="modal-title" class="text-lg font-bold text-gray-800 mb-4">Nuovo Prodotto</h3>

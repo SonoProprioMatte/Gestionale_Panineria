@@ -7,15 +7,13 @@ startSecureSession();
 header('Content-Type: application/json');
 
 $method = $_SERVER['REQUEST_METHOD'];
-$pdo = getPDO();
+$pdo    = getPDO();
 
 if ($method === 'GET') {
-    $showAll = isset($_GET['all']) && isAdmin();
-    $sql = $showAll
+    $sql  = isAdmin() && isset($_GET['all'])
         ? 'SELECT * FROM products ORDER BY category, name'
         : 'SELECT * FROM products WHERE is_visible = 1 ORDER BY category, name';
-    $stmt = $pdo->query($sql);
-    echo json_encode($stmt->fetchAll());
+    echo json_encode($pdo->query($sql)->fetchAll());
     exit;
 }
 
@@ -35,37 +33,36 @@ if ($method === 'POST') {
         echo json_encode(['error' => 'Nome e prezzo obbligatori']);
         exit;
     }
-    $stmt = $pdo->prepare('INSERT INTO products (name, description, price, category) VALUES (?,?,?,?)');
-    $stmt->execute([$name, trim($body['description'] ?? ''), $price, trim($body['category'] ?? 'Panini')]);
-    echo json_encode(['id' => $pdo->lastInsertId(), 'message' => 'Prodotto creato']);
+    $pdo->prepare('INSERT INTO products (name, description, price, category) VALUES (?,?,?,?)')
+        ->execute([$name, trim($body['description'] ?? ''), $price, trim($body['category'] ?? 'Panini')]);
+    echo json_encode(['id' => $pdo->lastInsertId()]);
+    exit;
+}
+
+$id = (int)($body['id'] ?? 0);
+if (!$id) {
+    http_response_code(400);
+    echo json_encode(['error' => 'ID mancante']);
     exit;
 }
 
 if ($method === 'PUT') {
-    $id = (int)($body['id'] ?? 0);
-    if (!$id) { http_response_code(400); echo json_encode(['error' => 'ID mancante']); exit; }
-    $stmt = $pdo->prepare('UPDATE products SET name=?, description=?, price=?, category=? WHERE id=?');
-    $stmt->execute([trim($body['name'] ?? ''), trim($body['description'] ?? ''), (float)($body['price'] ?? 0), trim($body['category'] ?? 'Panini'), $id]);
-    echo json_encode(['message' => 'Prodotto aggiornato']);
+    $pdo->prepare('UPDATE products SET name=?, description=?, price=?, category=? WHERE id=?')
+        ->execute([trim($body['name'] ?? ''), trim($body['description'] ?? ''), (float)($body['price'] ?? 0), trim($body['category'] ?? 'Panini'), $id]);
+    echo json_encode(['ok' => true]);
     exit;
 }
 
 if ($method === 'PATCH') {
-    $id = (int)($body['id'] ?? 0);
-    $is_visible = (int)($body['is_visible'] ?? 0);
-    if (!$id) { http_response_code(400); echo json_encode(['error' => 'ID mancante']); exit; }
-    $stmt = $pdo->prepare('UPDATE products SET is_visible=? WHERE id=?');
-    $stmt->execute([$is_visible, $id]);
-    echo json_encode(['message' => 'Visibilita aggiornata']);
+    $pdo->prepare('UPDATE products SET is_visible=? WHERE id=?')
+        ->execute([(int)($body['is_visible'] ?? 0), $id]);
+    echo json_encode(['ok' => true]);
     exit;
 }
 
 if ($method === 'DELETE') {
-    $id = (int)($body['id'] ?? 0);
-    if (!$id) { http_response_code(400); echo json_encode(['error' => 'ID mancante']); exit; }
-    $stmt = $pdo->prepare('DELETE FROM products WHERE id=?');
-    $stmt->execute([$id]);
-    echo json_encode(['message' => 'Prodotto eliminato']);
+    $pdo->prepare('DELETE FROM products WHERE id=?')->execute([$id]);
+    echo json_encode(['ok' => true]);
     exit;
 }
 

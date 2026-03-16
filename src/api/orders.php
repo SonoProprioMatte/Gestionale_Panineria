@@ -7,7 +7,7 @@ requireLogin();
 header('Content-Type: application/json');
 
 $method = $_SERVER['REQUEST_METHOD'];
-$pdo = getPDO();
+$pdo    = getPDO();
 $userId = (int)$_SESSION['user_id'];
 
 if ($method === 'GET') {
@@ -29,7 +29,6 @@ if ($method === 'GET') {
 if ($method === 'POST') {
     $body  = getJsonBody();
     $items = $body['items'] ?? [];
-    $notes = trim($body['notes'] ?? '');
 
     if (empty($items)) {
         http_response_code(400);
@@ -37,42 +36,43 @@ if ($method === 'POST') {
         exit;
     }
 
-    $ids = array_map(fn($i) => (int)$i['id'], $items);
-    $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $stmt = $pdo->prepare("SELECT id, name, price FROM products WHERE id IN ($placeholders) AND is_visible = 1");
+    $ids  = array_map(fn($i) => (int)$i['id'], $items);
+    $ph   = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $pdo->prepare("SELECT id, name, price FROM products WHERE id IN ($ph) AND is_visible = 1");
     $stmt->execute($ids);
-    $productMap = [];
-    foreach ($stmt->fetchAll() as $p) $productMap[$p['id']] = $p;
+
+    $map = [];
+    foreach ($stmt->fetchAll() as $p) $map[$p['id']] = $p;
 
     $total = 0;
-    $validItems = [];
+    $valid = [];
     foreach ($items as $item) {
         $id  = (int)$item['id'];
         $qty = max(1, (int)($item['qty'] ?? 1));
-        if (!isset($productMap[$id])) continue;
-        $total += $productMap[$id]['price'] * $qty;
-        $validItems[] = ['product' => $productMap[$id], 'qty' => $qty];
+        if (!isset($map[$id])) continue;
+        $total += $map[$id]['price'] * $qty;
+        $valid[] = ['product' => $map[$id], 'qty' => $qty];
     }
 
-    if (empty($validItems)) {
+    if (empty($valid)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Nessun prodotto valido nel carrello']);
+        echo json_encode(['error' => 'Nessun prodotto valido']);
         exit;
     }
 
     $pdo->beginTransaction();
     try {
-        $stmt = $pdo->prepare('INSERT INTO orders (user_id, total, notes) VALUES (?,?,?)');
-        $stmt->execute([$userId, round($total, 2), $notes]);
+        $pdo->prepare('INSERT INTO orders (user_id, total, notes) VALUES (?,?,?)')
+            ->execute([$userId, round($total, 2), trim($body['notes'] ?? '')]);
         $orderId = (int)$pdo->lastInsertId();
 
-        $itemStmt = $pdo->prepare('INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price) VALUES (?,?,?,?,?)');
-        foreach ($validItems as $vi) {
-            $itemStmt->execute([$orderId, $vi['product']['id'], $vi['product']['name'], $vi['qty'], $vi['product']['price']]);
+        $ins = $pdo->prepare('INSERT INTO order_items (order_id, product_id, product_name, quantity, unit_price) VALUES (?,?,?,?,?)');
+        foreach ($valid as $v) {
+            $ins->execute([$orderId, $v['product']['id'], $v['product']['name'], $v['qty'], $v['product']['price']]);
         }
         $pdo->commit();
-        echo json_encode(['id' => $orderId, 'total' => round($total, 2), 'message' => 'Ordine creato!']);
-    } catch (Exception $e) {
+        echo json_encode(['id' => $orderId, 'total' => round($total, 2)]);
+    } catch (Exception) {
         $pdo->rollBack();
         http_response_code(500);
         echo json_encode(['error' => 'Errore creazione ordine']);

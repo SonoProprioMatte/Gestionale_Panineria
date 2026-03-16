@@ -7,7 +7,7 @@ requireAdmin();
 header('Content-Type: application/json');
 
 $method = $_SERVER['REQUEST_METHOD'];
-$pdo = getPDO();
+$pdo    = getPDO();
 
 if ($method === 'GET') {
     $stmt = $pdo->query(
@@ -37,9 +37,8 @@ if ($method === 'PATCH') {
         exit;
     }
 
-    $stmt = $pdo->prepare('UPDATE orders SET status=? WHERE id=?');
-    $stmt->execute([$status, $id]);
-    echo json_encode(['message' => 'Stato aggiornato']);
+    $pdo->prepare('UPDATE orders SET status=? WHERE id=?')->execute([$status, $id]);
+    echo json_encode(['ok' => true]);
     exit;
 }
 

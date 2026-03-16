@@ -1,3 +1,5 @@
+# Le variabili sono nel file .env nella stessa cartella
+
 services:
   php:
     build:
@@ -7,16 +9,16 @@ services:
     volumes:
       - ./src:/var/www/html
     environment:
-      DB_HOST: db
-      DB_NAME: panineria
-      DB_USER: panineria_user
-      DB_PASS: panineria_pass
-      MAIL_HOST: smtp.gmail.com
-      MAIL_PORT: 587
-      MAIL_USERNAME: gestionalepanineria@gmail.com
-      MAIL_PASSWORD: voij awfp okhl idhn
-      MAIL_FROM: gestionalepanineria@gmail.com
-      MAIL_FROM_NAME: "PaninoBOT"
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM: ${MAIL_FROM}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
     depends_on:
       db:
         condition: service_healthy
@@ -42,15 +44,15 @@ services:
     container_name: panineria_db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: panineria
-      MYSQL_USER: panineria_user
-      MYSQL_PASSWORD: panineria_pass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
       - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
