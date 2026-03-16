@@ -1,1 +1,2 @@
-.env
+#Aggiungo .env nel file gitignore almeno non saranno visualizzabili le password nella repo Github
+#.env
