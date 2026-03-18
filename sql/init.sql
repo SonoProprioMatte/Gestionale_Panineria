@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS products (
     is_visible  TINYINT(1) NOT NULL DEFAULT 1,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
+    -- Toggle per acqua frizzante/naturale
+    ALTER TABLE products ADD COLUMN variant_options VARCHAR(255) DEFAULT NULL;
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -54,6 +57,31 @@ CREATE TABLE IF NOT EXISTS order_items (
     unit_price   DECIMAL(6,2) NOT NULL,
     FOREIGN KEY (order_id)   REFERENCES orders(id)   ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Modifiche agli orfini
+CREATE TABLE IF NOT EXISTS product_ingredients (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    name       VARCHAR(100) NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS product_extras (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    name       VARCHAR(100) NOT NULL,
+    price      DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS order_item_customizations (
+    id            INT AUTO_INCREMENT PRIMARY KEY,
+    order_item_id INT NOT NULL,
+    type          ENUM('remove','extra','variant','note') NOT NULL,
+    label         VARCHAR(150) NOT NULL,
+    price         DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Admin: password = admin123
