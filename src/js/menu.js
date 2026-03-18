@@ -1,12 +1,27 @@
-let cart = JSON.parse(localStorage.getItem('panineria_cart') || '[]');
+const CART_VERSION = 2;
+
+function loadCart() {
+    try {
+        const raw = localStorage.getItem('panineria_cart');
+        if (!raw) return [];
+        const data = JSON.parse(raw);
+        if (!data.version || data.version !== CART_VERSION) return [];
+        return data.items || [];
+    } catch {
+        return [];
+    }
+}
+
+function saveCart() {
+    localStorage.setItem('panineria_cart', JSON.stringify({ version: CART_VERSION, items: cart }));
+}
+
+let cart = loadCart();
 let allProducts = [];
 
 const ACTIVE_BTN   = 'px-3 py-1 bg-amber-500 text-white rounded-full text-sm font-medium';
 const INACTIVE_BTN = 'px-3 py-1 bg-white border border-amber-300 text-amber-700 rounded-full text-sm hover:bg-amber-50 transition';
 
-function saveCart() {
-    localStorage.setItem('panineria_cart', JSON.stringify(cart));
-}
 
 // =============================================
 // MENU
@@ -151,28 +166,31 @@ function selectVariant(btn) {
 }
 
 function updateModalPrice(p) {
+    const modal = document.getElementById('product-modal');
     let total = parseFloat(p.price);
-    document.querySelectorAll('.extra-check:checked').forEach(cb => {
+    modal.querySelectorAll('.extra-check:checked').forEach(cb => {
         total += parseFloat(cb.dataset.price || 0);
     });
     document.getElementById('pm-price').textContent = `€${total.toFixed(2)}`;
 }
 
 function confirmProductModal(p) {
+    const modal = document.getElementById('product-modal');
+
     // Collect removed ingredients
     const removed = [];
-    document.querySelectorAll('.ingredient-check').forEach(cb => {
+    modal.querySelectorAll('.ingredient-check').forEach(cb => {
         if (!cb.checked) removed.push(cb.value);
     });
 
     // Collect extras
     const extras = [];
-    document.querySelectorAll('.extra-check:checked').forEach(cb => {
+    modal.querySelectorAll('.extra-check:checked').forEach(cb => {
         extras.push({ name: cb.value, price: parseFloat(cb.dataset.price || 0) });
     });
 
-    // Collect variant
-    const variantBtn = document.querySelector('.variant-btn.bg-amber-500');
+    // Collect variant — cerca solo dentro il modal
+    const variantBtn = modal.querySelector('.variant-btn.bg-amber-500');
     const variant    = variantBtn ? variantBtn.textContent.trim() : '';
 
     // Collect note
