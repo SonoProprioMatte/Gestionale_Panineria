@@ -12,32 +12,50 @@ $pdo    = getPDO();
 if ($method === 'GET') {
     $stmt = $pdo->query(
         'SELECT o.id, o.total, o.status, o.notes, o.created_at,
-                u.name AS user_name,
-                GROUP_CONCAT(oi.quantity, "x ", oi.product_name ORDER BY oi.id SEPARATOR ", ") AS items
+                u.name AS user_name
          FROM orders o
          JOIN users u ON u.id = o.user_id
-         LEFT JOIN order_items oi ON oi.order_id = o.id
-         GROUP BY o.id
          ORDER BY FIELD(o.status, "in_attesa", "in_preparazione", "pronto", "consegnato"), o.created_at DESC
          LIMIT 100'
     );
-    echo json_encode($stmt->fetchAll());
+    $orders = $stmt->fetchAll();
+
+    // Attach items + customizations for each order
+    $itemStmt = $pdo->prepare(
+        'SELECT oi.id, oi.product_name, oi.quantity, oi.unit_price
+         FROM order_items oi WHERE oi.order_id = ? ORDER BY oi.id'
+    );
+    $custStmt = $pdo->prepare(
+        'SELECT type, label, price FROM order_item_customizations WHERE order_item_id = ? ORDER BY id'
+    );
+
+    foreach ($orders as &$order) {
+        $itemStmt->execute([$order['id']]);
+        $items = $itemStmt->fetchAll();
+
+        foreach ($items as &$item) {
+            $custStmt->execute([$item['id']]);
+            $item['customizations'] = $custStmt->fetchAll();
+        }
+        $order['items'] = $items;
+    }
+
+    echo json_encode($orders);
     exit;
 }
 
 if ($method === 'PATCH') {
-    $body   = getJsonBody();
-    $id     = (int)($body['id'] ?? 0);
-    $status = $body['status'] ?? '';
-    $valid  = ['in_attesa', 'in_preparazione', 'pronto', 'consegnato'];
+    $body  = getJsonBody();
+    $id    = (int)($body['id'] ?? 0);
+    $valid = ['in_attesa', 'in_preparazione', 'pronto', 'consegnato'];
 
-    if (!$id || !in_array($status, $valid, true)) {
+    if (!$id || !in_array($body['status'] ?? '', $valid, true)) {
         http_response_code(400);
         echo json_encode(['error' => 'Dati non validi']);
         exit;
     }
 
-    $pdo->prepare('UPDATE orders SET status=? WHERE id=?')->execute([$status, $id]);
+    $pdo->prepare('UPDATE orders SET status=? WHERE id=?')->execute([$body['status'], $id]);
     echo json_encode(['ok' => true]);
     exit;
 }

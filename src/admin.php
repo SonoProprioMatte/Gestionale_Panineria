@@ -46,8 +46,7 @@ requireAdmin();
     <section id="section-products" class="hidden">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-800">Gestione Menu</h2>
-            <button onclick="openModal()"
-                class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
+            <button onclick="openModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold transition">
                 + Nuovo Prodotto
             </button>
         </div>
@@ -57,42 +56,86 @@ requireAdmin();
     </section>
 </div>
 
+<!-- Modal prodotto -->
 <div id="modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 hidden z-50">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <h3 id="modal-title" class="text-lg font-bold text-gray-800 mb-4">Nuovo Prodotto</h3>
-        <form id="product-form" class="space-y-3">
-            <input type="hidden" id="product-id">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
-                <input type="text" id="product-name" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
-                <input type="text" id="product-category" value="Panini"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
-                <textarea id="product-description" rows="2"
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none resize-none"></textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Prezzo (€) *</label>
-                <input type="number" id="product-price" step="0.50" min="0" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none">
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button type="submit"
-                    class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition">
-                    Salva
-                </button>
-                <button type="button" onclick="closeModal()"
-                    class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg transition">
-                    Annulla
-                </button>
-            </div>
-        </form>
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <h3 id="modal-title" class="text-lg font-bold text-gray-800 mb-4">Nuovo Prodotto</h3>
+            <form id="product-form" class="space-y-4">
+                <input type="hidden" id="product-id">
+
+                <!-- Base info -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                        <input type="text" id="product-name" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                        <input type="text" id="product-category" value="Panini"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Prezzo (€) *</label>
+                        <input type="number" id="product-price" step="0.50" min="0" required
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Descrizione</label>
+                        <textarea id="product-description" rows="2"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none resize-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Ingredienti -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700">Ingredienti rimovibili</label>
+                        <button type="button" onclick="addIngredient()"
+                            class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium transition">
+                            + Aggiungi
+                        </button>
+                    </div>
+                    <div id="ingredients-list" class="space-y-2"></div>
+                </div>
+
+                <!-- Extra -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700">Extra a pagamento</label>
+                        <button type="button" onclick="addExtra()"
+                            class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium transition">
+                            + Aggiungi
+                        </button>
+                    </div>
+                    <div id="extras-list" class="space-y-2"></div>
+                    <p class="text-xs text-gray-400 mt-1">Nome extra + prezzo aggiuntivo (0 = gratuito)</p>
+                </div>
+
+                <!-- Variante -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Opzioni variante
+                        <span class="text-gray-400 font-normal">(es: Naturale, Frizzante)</span>
+                    </label>
+                    <input type="text" id="product-variants" placeholder="Opzione1, Opzione2"
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-amber-400 focus:outline-none">
+                    <p class="text-xs text-gray-400 mt-1">Separale con una virgola. Lascia vuoto se non necessario.</p>
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="submit"
+                        class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition">
+                        Salva
+                    </button>
+                    <button type="button" onclick="closeModal()"
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-lg transition">
+                        Annulla
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

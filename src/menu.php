@@ -50,7 +50,7 @@ requireLogin();
                 <span>Totale</span>
                 <span id="cart-total">€0.00</span>
             </div>
-            <textarea id="order-notes" placeholder="Note per l'ordine (opzionale)..."
+            <textarea id="order-notes" placeholder="Note generali sull'ordine (opzionale)..."
                 class="w-full border border-gray-200 rounded-lg p-2 text-sm mb-3 resize-none" rows="2"></textarea>
             <button onclick="submitOrder()" id="btn-order"
                 class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition disabled:opacity-50">
@@ -59,6 +59,52 @@ requireLogin();
         </div>
         <button onclick="toggleCart()" class="mt-3 w-full text-sm text-gray-400 hover:text-gray-600">Chiudi</button>
     </aside>
+</div>
+
+<!-- Product Modal -->
+<div id="product-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-start mb-1">
+                <h3 id="pm-title" class="text-xl font-bold text-gray-800"></h3>
+                <button onclick="closeProductModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none ml-4">×</button>
+            </div>
+            <p id="pm-desc" class="text-sm text-gray-500 mb-4"></p>
+
+            <!-- Ingredienti -->
+            <div id="pm-ingredients-section" class="mb-4">
+                <p class="text-sm font-semibold text-gray-700 mb-2">Ingredienti — deseleziona per rimuovere:</p>
+                <div id="pm-ingredients" class="space-y-2 bg-gray-50 rounded-lg p-3"></div>
+            </div>
+
+            <!-- Extra -->
+            <div id="pm-extras-section" class="mb-4">
+                <p class="text-sm font-semibold text-gray-700 mb-2">Extra:</p>
+                <div id="pm-extras" class="space-y-2 bg-gray-50 rounded-lg p-3"></div>
+            </div>
+
+            <!-- Variante -->
+            <div id="pm-variant-section" class="mb-4">
+                <p class="text-sm font-semibold text-gray-700 mb-2">Variante:</p>
+                <div id="pm-variant-btns" class="flex gap-2 flex-wrap"></div>
+            </div>
+
+            <!-- Note libere -->
+            <div class="mb-5">
+                <p class="text-sm font-semibold text-gray-700 mb-2">Altre richieste:</p>
+                <textarea id="pm-note" rows="2" placeholder="Es: senza sale, ben cotto..."
+                    class="w-full border border-gray-200 rounded-lg p-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+            </div>
+
+            <div class="flex items-center justify-between border-t pt-4">
+                <span class="text-lg font-bold text-amber-700" id="pm-price"></span>
+                <button id="pm-confirm"
+                    class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-2 rounded-xl transition">
+                    Aggiungi al carrello
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="toast" class="fixed bottom-6 right-6 hidden"></div>
