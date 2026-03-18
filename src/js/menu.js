@@ -95,6 +95,15 @@ function openProductModal(productId) {
     if (!p) return;
 
     const modal = document.getElementById('product-modal');
+
+    // Reset completo del modal prima di popolare
+    document.getElementById('pm-ingredients').innerHTML = '';
+    document.getElementById('pm-extras').innerHTML      = '';
+    document.getElementById('pm-variant-btns').innerHTML = '';
+    document.getElementById('pm-ingredients-section').classList.add('hidden');
+    document.getElementById('pm-extras-section').classList.add('hidden');
+    document.getElementById('pm-variant-section').classList.add('hidden');
+
     document.getElementById('pm-title').textContent = p.name;
     document.getElementById('pm-desc').textContent  = p.description || '';
     document.getElementById('pm-price').textContent = `€${parseFloat(p.price).toFixed(2)}`;
