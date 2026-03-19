@@ -89,8 +89,8 @@ if ($method === 'PATCH') {
                 $item['customizations'] = $custStmt->fetchAll();
             }
 
-            // Invia email (ignora eventuali errori SMTP per non bloccare la risposta)
-            sendOrderReadyEmail(
+            // Invia email solo se l'utente ha la notifica abilitata
+            if ($order['notify_order']) sendOrderReadyEmail(
                 $order['user_email'],
                 $order['user_name'],
                 (int)$order['id'],

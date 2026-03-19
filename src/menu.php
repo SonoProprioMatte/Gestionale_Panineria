@@ -13,19 +13,24 @@ requireLogin();
 </head>
 <body class="bg-amber-50 min-h-screen">
 
-<nav class="bg-amber-700 text-white px-6 py-4 flex items-center justify-between shadow-md">
+<nav class="bg-amber-700 text-white px-6 py-4 flex items-center justify-between shadow-md relative">
     <h1 class="text-xl font-bold">🥖 Panineria</h1>
-    <div class="flex items-center gap-4">
-        <span class="text-sm">Ciao, <strong><?= htmlspecialchars($_SESSION['user_name']) ?></strong></span>
+    <div class="flex items-center gap-3">
+        <span class="text-sm hidden sm:block">Ciao, <strong><?= htmlspecialchars($_SESSION['user_name']) ?></strong></span>
         <button onclick="toggleCart()"
             class="relative bg-amber-500 hover:bg-amber-400 px-3 py-1.5 rounded-lg text-sm font-semibold transition">
             🛒 Carrello
             <span id="cart-count"
                 class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center hidden">0</span>
         </button>
-        <a href="api/logout.php" class="text-sm hover:text-amber-200 transition">Esci</a>
+        <!-- Bottone profilo -->
+        <button id="profile-btn" onclick="toggleProfile()"
+            class="w-9 h-9 rounded-full overflow-hidden border-2 border-white/40 hover:border-white transition flex items-center justify-center bg-amber-500">
+        </button>
     </div>
 </nav>
+
+<?php include __DIR__ . '/profile_panel.php'; ?>
 
 <div class="max-w-6xl mx-auto px-4 py-8 flex gap-6">
     <main class="flex-1">
@@ -71,25 +76,21 @@ requireLogin();
             </div>
             <p id="pm-desc" class="text-sm text-gray-500 mb-4"></p>
 
-            <!-- Ingredienti -->
             <div id="pm-ingredients-section" class="mb-4">
                 <p class="text-sm font-semibold text-gray-700 mb-2">Ingredienti — deseleziona per rimuovere:</p>
                 <div id="pm-ingredients" class="space-y-2 bg-gray-50 rounded-lg p-3"></div>
             </div>
 
-            <!-- Extra -->
             <div id="pm-extras-section" class="mb-4">
                 <p class="text-sm font-semibold text-gray-700 mb-2">Extra:</p>
                 <div id="pm-extras" class="space-y-2 bg-gray-50 rounded-lg p-3"></div>
             </div>
 
-            <!-- Variante -->
             <div id="pm-variant-section" class="mb-4">
                 <p class="text-sm font-semibold text-gray-700 mb-2">Variante:</p>
                 <div id="pm-variant-btns" class="flex gap-2 flex-wrap"></div>
             </div>
 
-            <!-- Note libere -->
             <div class="mb-5">
                 <p class="text-sm font-semibold text-gray-700 mb-2">Altre richieste:</p>
                 <textarea id="pm-note" rows="2" placeholder="Es: senza sale, ben cotto..."
@@ -109,5 +110,6 @@ requireLogin();
 
 <div id="toast" class="fixed bottom-6 right-6 hidden"></div>
 <script src="js/menu.js"></script>
+<script src="js/profile.js"></script>
 </body>
 </html>

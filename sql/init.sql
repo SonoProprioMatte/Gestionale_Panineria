@@ -14,12 +14,15 @@ CREATE TABLE IF NOT EXISTS email_verifications (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS users (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
-    name       VARCHAR(100) NOT NULL,
-    email      VARCHAR(150) NOT NULL UNIQUE,
-    password   VARCHAR(255) NOT NULL,
-    role       ENUM('customer','admin') NOT NULL DEFAULT 'customer',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id             INT AUTO_INCREMENT PRIMARY KEY,
+    name           VARCHAR(100) NOT NULL,
+    email          VARCHAR(150) NOT NULL UNIQUE,
+    password       VARCHAR(255) NOT NULL,
+    role           ENUM('customer','admin') NOT NULL DEFAULT 'customer',
+    avatar_url     VARCHAR(255) DEFAULT NULL,
+    notify_login   TINYINT(1) NOT NULL DEFAULT 1,
+    notify_order   TINYINT(1) NOT NULL DEFAULT 1,
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS products (
@@ -95,30 +98,13 @@ INSERT INTO products (name, description, price, category, is_visible, variant_op
 ('Coca-Cola 33cl',    'Bevanda gassata',                                                              2.00, 'Bevande',    1, NULL),
 ('Acqua 50cl',        'Naturale o frizzante',                                                         1.00, 'Bevande',    1, '["Naturale","Frizzante"]');
 
--- Ingredienti Classico
 INSERT INTO product_ingredients (product_id, name) VALUES
-(1, 'Pane artigianale'), (1, 'Prosciutto cotto'), (1, 'Scamorza'), (1, 'Pomodoro fresco');
-
--- Ingredienti Americano
-INSERT INTO product_ingredients (product_id, name) VALUES
-(2, 'Burger di manzo'), (2, 'Cheddar'), (2, 'Bacon'), (2, 'Lattuga'), (2, 'Cipolla caramellata');
-
--- Ingredienti Vegetariano
-INSERT INTO product_ingredients (product_id, name) VALUES
-(3, 'Pane integrale'), (3, 'Hummus'), (3, 'Zucchine grigliate'), (3, 'Peperoni'), (3, 'Rucola');
-
--- Ingredienti Club Sandwich
-INSERT INTO product_ingredients (product_id, name) VALUES
-(4, 'Tacchino'), (4, 'Bacon'), (4, 'Uovo'), (4, 'Lattuga'), (4, 'Pomodoro'), (4, 'Maionese');
-
--- Ingredienti Piadina Romagnola
-INSERT INTO product_ingredients (product_id, name) VALUES
+(1, 'Pane artigianale'), (1, 'Prosciutto cotto'), (1, 'Scamorza'), (1, 'Pomodoro fresco'),
+(2, 'Burger di manzo'), (2, 'Cheddar'), (2, 'Bacon'), (2, 'Lattuga'), (2, 'Cipolla caramellata'),
+(3, 'Pane integrale'), (3, 'Hummus'), (3, 'Zucchine grigliate'), (3, 'Peperoni'), (3, 'Rucola'),
+(4, 'Tacchino'), (4, 'Bacon'), (4, 'Uovo'), (4, 'Lattuga'), (4, 'Pomodoro'), (4, 'Maionese'),
 (5, 'Piadina'), (5, 'Squacquerone'), (5, 'Prosciutto crudo'), (5, 'Rucola');
 
--- Extra Americano
 INSERT INTO product_extras (product_id, name, price) VALUES
-(2, 'Doppio burger', 2.00), (2, 'Doppio cheddar', 0.50), (2, 'Bacon extra', 1.00);
-
--- Extra Classico
-INSERT INTO product_extras (product_id, name, price) VALUES
+(2, 'Doppio burger', 2.00), (2, 'Doppio cheddar', 0.50), (2, 'Bacon extra', 1.00),
 (1, 'Scamorza extra', 0.50), (1, 'Prosciutto doppio', 1.00);
