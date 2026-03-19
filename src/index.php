@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'] ?? '';
 
         if ($email && $password) {
-            $stmt = getPDO()->prepare('SELECT id, name, password, role FROM users WHERE email = ?');
+            $stmt = getPDO()->prepare('SELECT id, name, email, password, role FROM users WHERE email = ?');
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
@@ -29,6 +29,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_id']   = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_role'] = $user['role'];
+
+                // Invia mail di notifica nuovo accesso (in background, ignora errori)
+                require_once __DIR__ . '/mailer.php';
+                sendNewLoginEmail($user['email'], $user['name']);
+
                 header('Location: ' . ($user['role'] === 'admin' ? 'admin.php' : 'menu.php'));
                 exit;
             }
@@ -36,12 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } elseif ($action === 'register') {
-        $name     = trim($_POST['name'] ?? '');
-        $email    = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $name      = trim($_POST['name'] ?? '');
+        $email     = trim($_POST['email'] ?? '');
+        $password  = $_POST['password'] ?? '';
+        $password2 = $_POST['password2'] ?? '';
 
         if (!$name || !$email || strlen($password) < 8) {
             $error = 'Compila tutti i campi. La password deve avere almeno 8 caratteri.';
+        } elseif ($password !== $password2) {
+            $error = 'Le due password non coincidono.';
         } else {
             $pdo = getPDO();
 
@@ -93,82 +101,118 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-amber-50 min-h-screen flex items-center justify-center p-4">
-<div class="w-full max-w-md">
-    <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-amber-800">🥖 Panineria</h1>
-        <p class="text-amber-600 mt-1">I panini più buoni della città</p>
-    </div>
-
-    <?php if ($error): ?>
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-        <?= htmlspecialchars($error) ?>
-    </div>
-    <?php endif; ?>
-
-    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div class="flex border-b border-gray-200">
-            <button onclick="showTab('login')" id="tab-login"
-                class="flex-1 py-3 font-semibold text-amber-700 border-b-2 border-amber-500 bg-amber-50 transition">
-                Accedi
-            </button>
-            <button onclick="showTab('register')" id="tab-register"
-                class="flex-1 py-3 font-semibold text-gray-500 hover:text-amber-700 transition">
-                Registrati
-            </button>
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-amber-800">🥖 Panineria</h1>
+            <p class="text-amber-600 mt-1">I panini più buoni della città</p>
         </div>
 
-        <form id="form-login" method="POST" class="p-6 space-y-4">
-            <input type="hidden" name="action" value="login">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" name="email" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input type="password" name="password" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
-            </div>
-            <button type="submit"
-                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition">
-                Entra
-            </button>
-            <p class="text-xs text-center text-gray-400">Admin: admin@panineria.it / admin123</p>
-        </form>
+        <?php if ($error): ?>
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <?= htmlspecialchars($error) ?>
+        </div>
+        <?php endif; ?>
 
-        <form id="form-register" method="POST" class="p-6 space-y-4 hidden">
-            <input type="hidden" name="action" value="register">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
-                <input type="text" name="name" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div class="flex border-b border-gray-200">
+                <button onclick="showTab('login')" id="tab-login"
+                    class="flex-1 py-3 font-semibold text-amber-700 border-b-2 border-amber-500 bg-amber-50 transition">
+                    Accedi
+                </button>
+                <button onclick="showTab('register')" id="tab-register"
+                    class="flex-1 py-3 font-semibold text-gray-500 hover:text-amber-700 transition">
+                    Registrati
+                </button>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input type="email" name="email" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password (min. 8 caratteri)</label>
-                <input type="password" name="password" minlength="8" required
-                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
-            </div>
-            <button type="submit"
-                class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition">
-                Crea Account
-            </button>
-        </form>
+
+            <!-- Login -->
+            <form id="form-login" method="POST" class="p-6 space-y-4">
+                <input type="hidden" name="action" value="login">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" name="password" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <button type="submit"
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition">
+                    Entra
+                </button>
+            </form>
+
+            <!-- Registrazione -->
+            <form id="form-register" method="POST" class="p-6 space-y-4 hidden" onsubmit="return checkPasswords()">
+                <input type="hidden" name="action" value="register">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                    <input type="text" name="name" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password (min. 8 caratteri)</label>
+                    <input type="password" name="password" id="reg-password" minlength="8" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Conferma Password</label>
+                    <input type="password" name="password2" id="reg-password2" minlength="8" required
+                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                    <p id="pw-match-msg" class="text-xs mt-1 hidden"></p>
+                </div>
+                <button type="submit"
+                    class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition">
+                    Crea Account
+                </button>
+            </form>
+        </div>
     </div>
-</div>
-<script>
-function showTab(tab) {
-    document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
-    document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
-    const active = 'flex-1 py-3 font-semibold text-amber-700 border-b-2 border-amber-500 bg-amber-50 transition';
-    const inactive = 'flex-1 py-3 font-semibold text-gray-500 hover:text-amber-700 transition';
-    document.getElementById('tab-login').className = tab === 'login' ? active : inactive;
-    document.getElementById('tab-register').className = tab === 'register' ? active : inactive;
-}
-</script>
+
+    <script>
+    function showTab(tab) {
+        document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+        document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
+        const active   = 'flex-1 py-3 font-semibold text-amber-700 border-b-2 border-amber-500 bg-amber-50 transition';
+        const inactive = 'flex-1 py-3 font-semibold text-gray-500 hover:text-amber-700 transition';
+        document.getElementById('tab-login').className    = tab === 'login'    ? active : inactive;
+        document.getElementById('tab-register').className = tab === 'register' ? active : inactive;
+    }
+
+    // Feedback visivo in tempo reale sulla corrispondenza password
+    document.getElementById('reg-password2').addEventListener('input', () => {
+        const p1  = document.getElementById('reg-password').value;
+        const p2  = document.getElementById('reg-password2').value;
+        const msg = document.getElementById('pw-match-msg');
+        if (!p2) { msg.classList.add('hidden'); return; }
+        msg.classList.remove('hidden');
+        if (p1 === p2) {
+            msg.textContent = '✓ Le password coincidono';
+            msg.className   = 'text-xs mt-1 text-green-600';
+        } else {
+            msg.textContent = '✗ Le password non coincidono';
+            msg.className   = 'text-xs mt-1 text-red-500';
+        }
+    });
+
+    function checkPasswords() {
+        const p1 = document.getElementById('reg-password').value;
+        const p2 = document.getElementById('reg-password2').value;
+        if (p1 !== p2) {
+            document.getElementById('pw-match-msg').textContent = '✗ Le password non coincidono';
+            document.getElementById('pw-match-msg').className   = 'text-xs mt-1 text-red-500';
+            document.getElementById('pw-match-msg').classList.remove('hidden');
+            return false;
+        }
+        return true;
+    }
+    </script>
 </body>
 </html>
