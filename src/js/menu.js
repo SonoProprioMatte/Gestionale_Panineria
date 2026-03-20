@@ -65,22 +65,32 @@ function renderProducts(products) {
         grid.innerHTML = '<p class="col-span-full text-center text-gray-400">Nessun prodotto disponibile.</p>';
         return;
     }
-    grid.innerHTML = products.map(p => `
-        <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden flex flex-col">
-            <div class="bg-amber-100 h-36 flex items-center justify-center text-5xl">${getCategoryEmoji(p.category)}</div>
+    grid.innerHTML = products.map(p => {
+        const unavailable = p.is_visible == 0;
+        return `
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col ${unavailable ? 'opacity-60' : 'hover:shadow-md transition'}">
+            <div class="relative">
+                <div class="bg-amber-100 h-36 flex items-center justify-center text-5xl ${unavailable ? 'grayscale' : ''}">${getCategoryEmoji(p.category)}</div>
+                ${unavailable ? `<div class="absolute inset-0 flex items-center justify-center bg-black/10">
+                    <span class="bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded-full">Non disponibile</span>
+                </div>` : ''}
+            </div>
             <div class="p-4 flex flex-col flex-1">
-                <h3 class="font-bold text-gray-800">${escHtml(p.name)}</h3>
-                <p class="text-sm text-gray-500 mt-1 flex-1">${escHtml(p.description || '')}</p>
+                <h3 class="font-bold ${unavailable ? 'text-gray-400' : 'text-gray-800'}">${escHtml(p.name)}</h3>
+                <p class="text-sm text-gray-400 mt-1 flex-1">${escHtml(p.description || '')}</p>
                 <div class="flex items-center justify-between mt-3">
-                    <span class="text-amber-700 font-bold text-lg">€${parseFloat(p.price).toFixed(2)}</span>
-                    <button onclick="openProductModal(${p.id})"
-                        class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">
-                        + Aggiungi
-                    </button>
+                    <span class="${unavailable ? 'text-gray-400' : 'text-amber-700'} font-bold text-lg">€${parseFloat(p.price).toFixed(2)}</span>
+                    ${unavailable
+                        ? `<span class="text-gray-400 text-sm font-medium">Non disponibile</span>`
+                        : `<button onclick="openProductModal(${p.id})"
+                            class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold transition">
+                            + Aggiungi
+                        </button>`
+                    }
                 </div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 function getCategoryEmoji(cat) {

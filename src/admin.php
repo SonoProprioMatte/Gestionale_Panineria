@@ -40,8 +40,21 @@ requireAdmin();
 
     <section id="section-orders">
         <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-gray-800">Ordini in Tempo Reale</h2>
-            <button onclick="loadOrders()" class="text-sm text-amber-600 hover:text-amber-700">↻ Aggiorna</button>
+            <div class="flex items-center gap-2">
+                <h2 class="text-xl font-bold text-gray-800">Ordini</h2>
+                <div class="flex gap-2 ml-4">
+                    <button id="orders-tab-active" onclick="showOrdersTab('active')"
+                        class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-amber-500 text-white transition">
+                        Attivi
+                    </button>
+                    <button id="orders-tab-archive" onclick="showOrdersTab('archive')"
+                        class="px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-gray-500 hover:bg-gray-50 transition border border-gray-200">
+                        Archivio
+                    </button>
+                </div>
+            </div>
+            <button onclick="showOrdersTab(document.getElementById('orders-tab-active').classList.contains('bg-amber-500') ? 'active' : 'archive')"
+                class="text-sm text-amber-600 hover:text-amber-700">↻ Aggiorna</button>
         </div>
         <div id="orders-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             <p class="text-gray-400">Caricamento...</p>

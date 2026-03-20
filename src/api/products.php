@@ -67,9 +67,11 @@ function saveCustomizations(PDO $pdo, int $productId, array $ingredients, array 
 
 // --- GET ---
 if ($method === 'GET') {
+    // admin con ?all=1 vede tutto
+    // clienti vedono tutti i prodotti (visibili e non) ma quelli nascosti sono marcati
     $sql      = (isset($_GET['all']) && isAdmin())
         ? 'SELECT * FROM products ORDER BY category, name'
-        : 'SELECT * FROM products WHERE is_visible = 1 ORDER BY category, name';
+        : 'SELECT * FROM products ORDER BY is_visible DESC, category, name';
     $products = $pdo->query($sql)->fetchAll();
     echo json_encode(attachCustomizations($pdo, $products));
     exit;

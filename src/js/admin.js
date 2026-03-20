@@ -7,17 +7,55 @@ function showSection(name) {
             ? 'px-5 py-2 bg-amber-500 text-white rounded-lg font-semibold shadow transition'
             : 'px-5 py-2 bg-white text-gray-600 rounded-lg font-semibold shadow hover:bg-gray-50 transition';
     });
-    if (name === 'orders') loadOrders();
+    if (name === 'orders') showOrdersTab('active');
     if (name === 'products') loadProducts();
 }
 
 // =============================================
-// ORDERS
+// ORDERS — tab attivi / archivio
 // =============================================
+function showOrdersTab(tab) {
+    const isArchive = tab === 'archive';
+    document.getElementById('orders-tab-active').className = !isArchive
+        ? 'px-4 py-1.5 rounded-lg text-sm font-semibold bg-amber-500 text-white transition'
+        : 'px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-gray-500 hover:bg-gray-50 transition border border-gray-200';
+    document.getElementById('orders-tab-archive').className = isArchive
+        ? 'px-4 py-1.5 rounded-lg text-sm font-semibold bg-gray-600 text-white transition'
+        : 'px-4 py-1.5 rounded-lg text-sm font-semibold bg-white text-gray-500 hover:bg-gray-50 transition border border-gray-200';
+    isArchive ? loadArchivedOrders() : loadOrders();
+}
+
+function formatOrderDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        + ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderOrderItems(items) {
+    if (!items || !items.length) return '';
+    return `<div class="border-t pt-2 mb-3 space-y-2">
+        ${items.map(item => {
+            const removed = item.customizations.filter(c => c.type === 'remove');
+            const extras  = item.customizations.filter(c => c.type === 'extra');
+            const variant = item.customizations.find(c => c.type === 'variant');
+            const note    = item.customizations.find(c => c.type === 'note');
+            return `<div class="text-sm">
+                <span class="font-medium">${item.quantity}x ${escHtml(item.product_name)}</span>
+                <span class="text-gray-400 ml-1">€${parseFloat(item.unit_price).toFixed(2)}</span>
+                ${variant ? `<span class="ml-1 text-blue-500 text-xs">[${escHtml(variant.label)}]</span>` : ''}
+                ${removed.length ? `<p class="text-xs text-red-400 mt-0.5">− ${removed.map(r => escHtml(r.label)).join(', ')}</p>` : ''}
+                ${extras.length  ? `<p class="text-xs text-green-600 mt-0.5">+ ${extras.map(e => escHtml(e.label)).join(', ')}</p>` : ''}
+                ${note ? `<p class="text-xs text-gray-400 italic mt-0.5">"${escHtml(note.label)}"</p>` : ''}
+            </div>`;
+        }).join('')}
+    </div>`;
+}
+
 async function loadOrders() {
+    const el = document.getElementById('orders-container');
+    el.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Caricamento...</p>';
     try {
         const orders = await fetch('api/admin_orders.php').then(r => r.json());
-        const el     = document.getElementById('orders-container');
         if (!orders.length) {
             el.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Nessun ordine attivo.</p>';
             return;
@@ -27,34 +65,13 @@ async function loadOrders() {
                 <div class="flex justify-between items-start mb-2">
                     <div>
                         <p class="font-bold text-gray-800">Ordine #${o.id}</p>
-                        <p class="text-sm text-gray-500">${escHtml(o.user_name)} — ${new Date(o.created_at).toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})}</p>
+                        <p class="text-sm text-gray-500">${escHtml(o.user_name)}</p>
+                        <p class="text-xs text-gray-400">${formatOrderDate(o.created_at)}</p>
                     </div>
                     <span class="font-bold text-amber-700">€${parseFloat(o.total).toFixed(2)}</span>
                 </div>
-
-                ${o.items && o.items.length ? `
-                    <div class="border-t pt-2 mb-3 space-y-2">
-                        ${o.items.map(item => {
-                            const removed  = item.customizations.filter(c => c.type === 'remove');
-                            const extras   = item.customizations.filter(c => c.type === 'extra');
-                            const variant  = item.customizations.find(c => c.type === 'variant');
-                            const note     = item.customizations.find(c => c.type === 'note');
-                            return `
-                                <div class="text-sm">
-                                    <span class="font-medium">${item.quantity}x ${escHtml(item.product_name)}</span>
-                                    <span class="text-gray-400 ml-1">€${parseFloat(item.unit_price).toFixed(2)}</span>
-                                    ${variant  ? `<span class="ml-1 text-blue-500 text-xs">[${escHtml(variant.label)}]</span>` : ''}
-                                    ${removed.length  ? `<p class="text-xs text-red-400 mt-0.5">− ${removed.map(r => escHtml(r.label)).join(', ')}</p>` : ''}
-                                    ${extras.length   ? `<p class="text-xs text-green-600 mt-0.5">+ ${extras.map(e => escHtml(e.label)).join(', ')}</p>` : ''}
-                                    ${note    ? `<p class="text-xs text-gray-400 italic mt-0.5">"${escHtml(note.label)}"</p>` : ''}
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                ` : ''}
-
+                ${renderOrderItems(o.items)}
                 ${o.notes ? `<p class="text-xs text-blue-600 mb-3 italic">📝 ${escHtml(o.notes)}</p>` : ''}
-
                 <select onchange="updateOrderStatus(${o.id}, this.value)"
                     class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400">
                     ${['in_attesa','in_preparazione','pronto','consegnato'].map(s =>
@@ -64,7 +81,36 @@ async function loadOrders() {
             </div>
         `).join('');
     } catch {
-        document.getElementById('orders-container').innerHTML = '<p class="text-red-400">Errore caricamento ordini.</p>';
+        el.innerHTML = '<p class="text-red-400">Errore caricamento ordini.</p>';
+    }
+}
+
+async function loadArchivedOrders() {
+    const el = document.getElementById('orders-container');
+    el.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Caricamento archivio...</p>';
+    try {
+        const orders = await fetch('api/admin_orders.php?archived=1').then(r => r.json());
+        if (!orders.length) {
+            el.innerHTML = '<p class="text-gray-400 col-span-full text-center py-8">Nessun ordine in archivio.</p>';
+            return;
+        }
+        el.innerHTML = orders.map(o => `
+            <div class="bg-white rounded-xl p-4 shadow-sm border-l-4 border-gray-200 opacity-80">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <p class="font-bold text-gray-600">Ordine #${o.id}</p>
+                        <p class="text-sm text-gray-400">${escHtml(o.user_name)}</p>
+                        <p class="text-xs text-gray-300">${formatOrderDate(o.created_at)}</p>
+                    </div>
+                    <span class="font-bold text-gray-500">€${parseFloat(o.total).toFixed(2)}</span>
+                </div>
+                ${renderOrderItems(o.items)}
+                ${o.notes ? `<p class="text-xs text-gray-400 mb-3 italic">📝 ${escHtml(o.notes)}</p>` : ''}
+                <span class="text-xs text-gray-400 font-medium">🎉 Consegnato</span>
+            </div>
+        `).join('');
+    } catch {
+        el.innerHTML = '<p class="text-red-400">Errore caricamento archivio.</p>';
     }
 }
 

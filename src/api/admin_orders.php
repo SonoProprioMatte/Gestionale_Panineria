@@ -11,14 +11,31 @@ $method = $_SERVER['REQUEST_METHOD'];
 $pdo    = getPDO();
 
 if ($method === 'GET') {
-    $stmt = $pdo->query(
-        'SELECT o.id, o.total, o.status, o.notes, o.created_at,
-                u.name AS user_name
-         FROM orders o
-         JOIN users u ON u.id = o.user_id
-         ORDER BY FIELD(o.status, "in_attesa", "in_preparazione", "pronto", "consegnato"), o.created_at DESC
-         LIMIT 100'
-    );
+    $archived = isset($_GET['archived']);
+
+    if ($archived) {
+        // Solo ordini consegnati
+        $stmt = $pdo->query(
+            'SELECT o.id, o.total, o.status, o.notes, o.created_at,
+                    u.name AS user_name
+             FROM orders o
+             JOIN users u ON u.id = o.user_id
+             WHERE o.status = "consegnato"
+             ORDER BY o.created_at DESC
+             LIMIT 200'
+        );
+    } else {
+        // Solo ordini non ancora consegnati
+        $stmt = $pdo->query(
+            'SELECT o.id, o.total, o.status, o.notes, o.created_at,
+                    u.name AS user_name
+             FROM orders o
+             JOIN users u ON u.id = o.user_id
+             WHERE o.status != "consegnato"
+             ORDER BY FIELD(o.status, "in_attesa", "in_preparazione", "pronto"), o.created_at DESC
+             LIMIT 100'
+        );
+    }
     $orders = $stmt->fetchAll();
 
     $itemStmt = $pdo->prepare(
