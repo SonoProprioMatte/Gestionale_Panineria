@@ -71,7 +71,7 @@ if ($method === 'GET') {
     // clienti vedono tutti i prodotti (visibili e non) ma quelli nascosti sono marcati
     $sql      = (isset($_GET['all']) && isAdmin())
         ? 'SELECT * FROM products ORDER BY category, name'
-        : 'SELECT * FROM products ORDER BY is_visible DESC, category, name';
+        : 'SELECT * FROM products ORDER BY category, name, is_visible DESC';
     $products = $pdo->query($sql)->fetchAll();
     echo json_encode(attachCustomizations($pdo, $products));
     exit;

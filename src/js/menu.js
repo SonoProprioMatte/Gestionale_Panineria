@@ -66,7 +66,7 @@ function renderProducts(products) {
         return;
     }
     grid.innerHTML = products.map(p => {
-        const unavailable = p.is_visible == 0;
+        const unavailable = parseInt(p.is_visible) === 0;
         return `
         <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col ${unavailable ? 'opacity-60' : 'hover:shadow-md transition'}">
             <div class="relative">
@@ -103,6 +103,7 @@ function getCategoryEmoji(cat) {
 function openProductModal(productId) {
     const p = allProducts.find(x => x.id === productId);
     if (!p) return;
+    if (parseInt(p.is_visible) === 0) return; // blocca prodotti non disponibili
 
     const modal = document.getElementById('product-modal');
 

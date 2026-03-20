@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'] ?? '';
 
         if ($email && $password) {
-            $stmt = getPDO()->prepare('SELECT id, name, email, password, role FROM users WHERE email = ?');
+            $stmt = getPDO()->prepare('SELECT id, name, email, password, role, notify_login FROM users WHERE email = ?');
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
@@ -30,9 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_role'] = $user['role'];
 
-                // Invia mail di notifica nuovo accesso (in background, ignora errori)
-                require_once __DIR__ . '/mailer.php';
-                sendNewLoginEmail($user['email'], $user['name']);
+                // Invia mail notifica accesso solo se l'utente lo ha abilitato
+                if ($user['notify_login']) {
+                    require_once __DIR__ . '/mailer.php';
+                    sendNewLoginEmail($user['email'], $user['name']);
+                }
 
                 header('Location: ' . ($user['role'] === 'admin' ? 'admin.php' : 'menu.php'));
                 exit;
