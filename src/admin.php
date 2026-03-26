@@ -132,6 +132,30 @@ requireAdmin();
                     <p class="text-xs text-gray-400 mt-1">Separale con virgola. Lascia vuoto se non necessario.</p>
                 </div>
 
+                <!-- Immagine prodotto -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-700">Immagine prodotto</label>
+                        <label class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium transition cursor-pointer">
+                            + Carica nuova
+                            <input type="file" id="img-upload-input" accept="image/*" class="hidden" onchange="uploadProductImage()">
+                        </label>
+                    </div>
+                    <!-- Anteprima immagine corrente -->
+                    <div id="img-current-preview" class="mb-2 bg-gray-50 rounded-lg min-h-10">
+                        <p class="text-xs text-gray-400 text-center py-4">Nessuna immagine</p>
+                    </div>
+                    <button type="button" id="img-remove-btn" onclick="removeCurrentImage()"
+                        class="hidden text-xs text-red-500 hover:text-red-700 mb-2">
+                        × Rimuovi immagine
+                    </button>
+                    <!-- Libreria immagini -->
+                    <p class="text-xs text-gray-500 mb-1">Oppure scegli dalla libreria:</p>
+                    <div id="img-library-grid" class="grid grid-cols-4 gap-1.5 max-h-32 overflow-y-auto">
+                        <p class="text-xs text-gray-400 col-span-full text-center py-2">Caricamento...</p>
+                    </div>
+                </div>
+
                 <div class="flex gap-3 pt-2">
                     <button type="submit"
                         class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 rounded-lg transition">Salva</button>

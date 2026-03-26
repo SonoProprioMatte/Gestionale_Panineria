@@ -67,12 +67,21 @@ function renderProducts(products) {
     }
     grid.innerHTML = products.map(p => {
         const unavailable = parseInt(p.is_visible) === 0;
+        const emoji = getCategoryEmoji(p.category);
         return `
         <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col ${unavailable ? 'opacity-60' : 'hover:shadow-md transition'}">
-            <div class="relative">
-                <div class="bg-amber-100 h-36 flex items-center justify-center text-5xl ${unavailable ? 'grayscale' : ''}">${getCategoryEmoji(p.category)}</div>
-                ${unavailable ? `<div class="absolute inset-0 flex items-center justify-center bg-black/10">
-                    <span class="bg-gray-700 text-white text-xs font-semibold px-3 py-1 rounded-full">Non disponibile</span>
+            <div class="relative h-36 bg-amber-100 overflow-hidden">
+                ${p.image_url
+                    ? `<img src="${p.image_url}" alt="${escHtml(p.name)}"
+                          class="w-full h-full object-cover ${unavailable ? 'grayscale' : ''}">`
+                    : `<div class="w-full h-full flex items-center justify-center text-5xl ${unavailable ? 'grayscale' : ''}">${emoji}</div>`
+                }
+                <!-- Bolla categoria in alto a sinistra -->
+                <div class="absolute top-2 left-2 bg-black/40 text-white text-base rounded-full w-8 h-8 flex items-center justify-center backdrop-blur-sm">
+                    ${emoji}
+                </div>
+                ${unavailable ? `<div class="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <span class="bg-gray-700/90 text-white text-xs font-semibold px-3 py-1 rounded-full">Non disponibile</span>
                 </div>` : ''}
             </div>
             <div class="p-4 flex flex-col flex-1">

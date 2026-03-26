@@ -1,4 +1,6 @@
 let products = [];
+let imageLibrary = [];
+let selectedImageUrl = null;
 
 function showSection(name) {
     ['orders', 'products'].forEach(s => {
@@ -227,13 +229,109 @@ function openModal(id = null) {
     document.getElementById('product-price').value       = p?.price ?? '';
     document.getElementById('product-variants').value    = p?.variant_options?.join(', ') ?? '';
 
-    // Ingredients
-    renderIngredientsList(p?.ingredients ?? []);
+    // Immagine corrente
+    selectedImageUrl = p?.image_url ?? null;
+    renderCurrentImage();
 
-    // Extras
+    renderIngredientsList(p?.ingredients ?? []);
     renderExtrasList(p?.extras ?? []);
+    loadImageLibrary();
 
     document.getElementById('modal').classList.remove('hidden');
+}
+
+// =============================================
+// IMAGE LIBRARY
+// =============================================
+async function loadImageLibrary() {
+    try {
+        imageLibrary = await fetch('api/product_images.php').then(r => r.json());
+        renderImageLibrary();
+    } catch {
+        document.getElementById('img-library-grid').innerHTML =
+            '<p class="text-xs text-red-400 col-span-full">Errore caricamento libreria.</p>';
+    }
+}
+
+function renderCurrentImage() {
+    const preview = document.getElementById('img-current-preview');
+    const removeBtn = document.getElementById('img-remove-btn');
+    if (selectedImageUrl) {
+        preview.innerHTML = `<img src="${selectedImageUrl}" class="w-full h-28 object-cover rounded-lg">`;
+        removeBtn.classList.remove('hidden');
+    } else {
+        preview.innerHTML = '<p class="text-xs text-gray-400 text-center py-4">Nessuna immagine</p>';
+        removeBtn.classList.add('hidden');
+    }
+}
+
+function renderImageLibrary() {
+    const grid = document.getElementById('img-library-grid');
+    if (!imageLibrary.length) {
+        grid.innerHTML = '<p class="text-xs text-gray-400 col-span-full text-center py-2">Nessuna immagine in libreria.</p>';
+        return;
+    }
+    grid.innerHTML = imageLibrary.map(img => `
+        <div class="relative group cursor-pointer" onclick="selectLibraryImage('${img.url}')">
+            <img src="${img.url}" class="w-full h-16 object-cover rounded-lg border-2 transition
+                ${img.url === selectedImageUrl ? 'border-amber-500' : 'border-transparent hover:border-amber-300'}">
+            <button type="button" onclick="deleteLibraryImage(event, '${img.filename}')"
+                class="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs
+                       opacity-0 group-hover:opacity-100 transition flex items-center justify-center">×</button>
+        </div>
+    `).join('');
+}
+
+function selectLibraryImage(url) {
+    selectedImageUrl = url;
+    renderCurrentImage();
+    renderImageLibrary();
+}
+
+function removeCurrentImage() {
+    selectedImageUrl = null;
+    renderCurrentImage();
+    renderImageLibrary();
+}
+
+async function uploadProductImage() {
+    const input = document.getElementById('img-upload-input');
+    if (!input.files[0]) return;
+    const form = new FormData();
+    form.append('image', input.files[0]);
+    try {
+        const res  = await fetch('api/product_images.php', { method: 'POST', body: form });
+        const data = await res.json();
+        if (!res.ok) { showToast(data.error, 'error'); return; }
+        selectedImageUrl = data.url;
+        await loadImageLibrary();
+        renderCurrentImage();
+        showToast('Immagine caricata!');
+    } catch {
+        showToast('Errore upload', 'error');
+    }
+    input.value = '';
+}
+
+async function deleteLibraryImage(e, filename) {
+    e.stopPropagation();
+    if (!confirm('Eliminare questa immagine dalla libreria?')) return;
+    try {
+        const res = await fetch('api/product_images.php', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filename })
+        });
+        if (!res.ok) throw new Error();
+        if (selectedImageUrl && selectedImageUrl.includes(filename)) {
+            selectedImageUrl = null;
+            renderCurrentImage();
+        }
+        await loadImageLibrary();
+        showToast('Immagine eliminata');
+    } catch {
+        showToast('Errore eliminazione', 'error');
+    }
 }
 
 function closeModal() {
@@ -338,6 +436,7 @@ document.getElementById('product-form').addEventListener('submit', async e => {
         ingredients:     getIngredients(),
         extras:          getExtras(),
         variant_options: variantOptions,
+        image_url:       selectedImageUrl,
     };
     if (id) body.id = parseInt(id);
 

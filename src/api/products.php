@@ -99,8 +99,9 @@ if ($method === 'POST') {
         ? json_encode(array_filter(array_map('trim', $body['variant_options'])))
         : null;
 
-    $pdo->prepare('INSERT INTO products (name, description, price, category, variant_options) VALUES (?,?,?,?,?)')
-        ->execute([$name, trim($body['description'] ?? ''), $price, trim($body['category'] ?? 'Panini'), $variantOptions]);
+    $imageUrl = $body['image_url'] ?? null;
+    $pdo->prepare('INSERT INTO products (name, description, price, category, variant_options, image_url) VALUES (?,?,?,?,?,?)')
+        ->execute([$name, trim($body['description'] ?? ''), $price, trim($body['category'] ?? 'Panini'), $variantOptions, $imageUrl]);
     $id = (int)$pdo->lastInsertId();
 
     saveCustomizations($pdo, $id, $body['ingredients'] ?? [], $body['extras'] ?? [], $variantOptions);
@@ -117,8 +118,9 @@ if ($method === 'PUT') {
         ? json_encode(array_filter(array_map('trim', $body['variant_options'])))
         : null;
 
-    $pdo->prepare('UPDATE products SET name=?, description=?, price=?, category=?, variant_options=? WHERE id=?')
-        ->execute([trim($body['name'] ?? ''), trim($body['description'] ?? ''), (float)($body['price'] ?? 0), trim($body['category'] ?? 'Panini'), $variantOptions, $id]);
+    $imageUrl = array_key_exists('image_url', $body) ? $body['image_url'] : null;
+    $pdo->prepare('UPDATE products SET name=?, description=?, price=?, category=?, variant_options=?, image_url=? WHERE id=?')
+        ->execute([trim($body['name'] ?? ''), trim($body['description'] ?? ''), (float)($body['price'] ?? 0), trim($body['category'] ?? 'Panini'), $variantOptions, $imageUrl, $id]);
 
     saveCustomizations($pdo, $id, $body['ingredients'] ?? [], $body['extras'] ?? [], $variantOptions);
     echo json_encode(['ok' => true]);
