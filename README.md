@@ -1,4 +1,4 @@
-# 🥖 Gestionale Panineria
+# 🥖 Gestionale Panineria (School Project)
 
 > A Dockerized full-stack web app for sandwich shop management — real-time order tracking, menu customization, and automated email notifications.
 
