@@ -1,80 +1,113 @@
 # 🥖 Gestionale Panineria
 
-Web app completa per la gestione di una panineria — menu, ordini, pannello admin e registrazione con verifica email.
+> A Dockerized full-stack web app for sandwich shop management — real-time order tracking, menu customization, and automated email notifications.
 
-## Stack
+![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?logo=mysql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-latest-009639?logo=nginx&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-CDN-06B6D4?logo=tailwindcss&logoColor=white)
 
-| Layer | Tecnologia |
-|---|---|
-| Frontend | HTML5, Tailwind CSS (CDN), Vanilla JS |
-| Backend | PHP 8.2 con PDO |
-| Database | MySQL 8.0 |
-| Email | PHPMailer via Gmail SMTP |
-| Infrastruttura | Docker + Docker Compose + Nginx |
+---
 
-## Avvio rapido
+## ✨ Features
 
-### Requisiti
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installato e avviato
+### 👤 Customer
+- Registration with **email verification** (6-digit code, expires in 15 min)
+- Login with role-based access (`customer` / `admin`)
+- Browse menu with **category filtering**
+- Local cart (via `localStorage`) with optional order notes
+- **Personal order history** with live status updates
 
-### 1. Clona il repository
+### 🛠️ Admin
+- Full **CRUD** on menu items (add, edit, delete, show/hide)
+- Real-time order management panel
+- Order lifecycle: `Pending → Preparing → Ready → Delivered`
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer          | Technology                        |
+|----------------|-----------------------------------|
+| Frontend       | HTML5, Tailwind CSS (CDN), Vanilla JS |
+| Backend        | PHP 8.2 with PDO                  |
+| Database       | MySQL 8.0                         |
+| Email          | PHPMailer via Gmail SMTP          |
+| Infrastructure | Docker + Docker Compose + Nginx   |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+
+### 1. Clone the repository
 ```bash
 git clone https://github.com/SonoProprioMatte/Gestionale_Panineria.git
 cd Gestionale_Panineria
 ```
 
-### 2. Avvia
+### 2. Configure environment variables
+```bash
+cp .env.example .env
+# Edit .env with your SMTP credentials (see SMTP Configuration below)
+```
+
+### 3. Start the app
 ```bash
 bash start.sh
 ```
 
-### 3. Apri il browser
+### 4. Open in browser
 ```
 http://localhost:8080
 ```
 
-> Su **GitHub Codespaces**: vai nel tab **PORTS** e clicca il globo 🌐 sulla porta 8080.
+> 💡 **GitHub Codespaces users:** go to the **PORTS** tab and click the 🌐 globe icon on port 8080.
 
 ---
 
-## Credenziali default
+## 🔑 Default Credentials
 
-| Ruolo | Email | Password |
-|---|---|---|
-| Admin | admin@panineria.it | admin123 |
+| Role  | Email              | Password  |
+|-------|--------------------|-----------|
+| Admin | admin@panineria.it | admin123  |
 
-> ⚠️ Cambia la password admin prima di andare in produzione.
+> ⚠️ **Change the admin password before deploying to production.**
 
 ---
 
-## Struttura del progetto
+## 📁 Project Structure
 
 ```
 Gestionale_Panineria/
-├── .env                        # Variabili d'ambiente (SMTP, DB)
-├── docker-compose.yml          # Orchestrazione container
-├── start.sh                    # Script di avvio
+├── .env                        # Environment variables (SMTP, DB)
+├── .env.example                # Environment template
+├── docker-compose.yml          # Container orchestration
+├── start.sh                    # Startup script
 ├── docker/
 │   ├── php/
 │   │   ├── Dockerfile
-│   │   ├── composer.json       # PHPMailer
+│   │   ├── composer.json       # PHPMailer dependency
 │   │   └── php.ini
 │   └── nginx/
 │       └── default.conf
 ├── sql/
-│   └── init.sql                # Schema DB + dati di esempio
+│   └── init.sql                # DB schema + seed data
 └── src/
-    ├── index.php               # Login / Registrazione
-    ├── menu.php                # Vista cliente
-    ├── admin.php               # Pannello admin
-    ├── verify.php              # Verifica email
-    ├── db.php                  # Connessione PDO
-    ├── auth.php                # Gestione sessioni e ruoli
-    ├── mailer.php              # Invio email con PHPMailer
+    ├── index.php               # Login / Registration
+    ├── menu.php                # Customer view
+    ├── admin.php               # Admin panel
+    ├── verify.php              # Email verification
+    ├── db.php                  # PDO connection
+    ├── auth.php                # Session & role management
+    ├── mailer.php              # Email via PHPMailer
     ├── api/
-    │   ├── products.php        # CRUD prodotti
-    │   ├── orders.php          # Ordini cliente
-    │   ├── admin_orders.php    # Gestione ordini admin
+    │   ├── products.php        # CRUD products
+    │   ├── orders.php          # Customer orders
+    │   ├── admin_orders.php    # Admin order management
     │   └── logout.php
     └── js/
         ├── menu.js
@@ -83,59 +116,52 @@ Gestionale_Panineria/
 
 ---
 
-## Funzionalità
+## 📧 SMTP Configuration
 
-**Cliente**
-- Registrazione con verifica email (codice a 6 cifre, scade in 15 minuti)
-- Login con ruoli `customer` e `admin`
-- Visualizzazione menu con filtro per categoria
-- Carrello locale (localStorage)
-- Invio ordini con note opzionali
-- Storico ordini personali con stato in tempo reale
-
-**Admin**
-- Gestione menu: aggiungi, modifica, elimina, nascondi/mostra prodotti
-- Gestione ordini: visualizzazione in tempo reale con aggiornamento stato
-- Stati ordine: In attesa → In preparazione → Pronto → Consegnato
-
----
-
-## Comandi utili
-
-```bash
-# Avvia i container
-bash start.sh
-
-# Ferma i container (dati conservati)
-docker compose stop
-
-# Ferma e cancella tutto incluso il database
-docker compose down -v
-
-# Vedi i log
-docker compose logs -f
-
-# Controlla lo stato dei container
-docker compose ps
-
-# Controlla lo stato di Git
-git status
-```
-
----
-
-## Configurazione SMTP
-
-Le credenziali sono nel file `.env`. Per cambiare account email modifica queste righe:
+Edit the `.env` file with your Gmail credentials:
 
 ```env
-MAIL_USERNAME=tuaemail@gmail.com
+MAIL_USERNAME=your@gmail.com
 MAIL_PASSWORD=xxxx xxxx xxxx xxxx
-MAIL_FROM=tuaemail@gmail.com
+MAIL_FROM=your@gmail.com
 MAIL_FROM_NAME=PaninoBOT
 ```
 
-Per Gmail è necessaria una **App Password** (non la password normale):
-1. Vai su [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-2. Crea una nuova App Password
-3. Incolla il codice a 16 caratteri in `MAIL_PASSWORD`
+Gmail requires an **App Password** (not your regular password):
+
+1. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+2. Create a new App Password
+3. Paste the 16-character code into `MAIL_PASSWORD`
+
+---
+
+## 🐳 Useful Docker Commands
+
+```bash
+# Start containers
+bash start.sh
+
+# Stop containers (data preserved)
+docker compose stop
+
+# Stop and remove everything including the database
+docker compose down -v
+
+# View live logs
+docker compose logs -f
+
+# Check container status
+docker compose ps
+```
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
+
+---
+
+## 📄 License
+
+This project is open source. Feel free to use it as a base for your own sandwich shop management system 🥪
